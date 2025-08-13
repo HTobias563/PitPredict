@@ -47,3 +47,22 @@ dtypes = {
     "podium": "int8"
 }
 
+plan: 
+Frame the problem + targets
+Load & clean the lap data
+Build per-driver-per-race “strategy tables” (stints, stops, compounds)
+Create features (pace, degradation, pit loss, weather, circuit, team form, etc.)
+Define labels for three tasks: total stops, compounds used, final position
+Baselines (simple rules + tree models)
+Cross-validation that avoids leakage (by race/season) + metrics
+Hyperparam tuning + feature importance
+(Optional but powerful) Pit-stop hazard model + Monte Carlo simulation
+Package inference for “next race” use
+
+
+Best Practice: zweistufig vorgehen
+Teilmodelle für Strategie:
+(A) Pit-Stop-Anzahl (Klassifikation)
+(B) Erster Stopp (Regression)
+(C) Strategie-Pattern (z. B. SOFT->MEDIUM->HARD) (Klassifikation)
+Endmodell für Finish Position, das die vorhergesagten A+B+C als Features nutzt – nicht die echten (sonst Leakage!).
