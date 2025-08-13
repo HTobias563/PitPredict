@@ -37,7 +37,11 @@ DTYPES = {
     "air_temp": "float32",
     "track_temp": "float32",
     "wind_speed": "float32",
-    "humidity": "float32"
+    "humidity": "float32",
+    "is_dnf": "int8",
+    "dnf_reason": "category",
+    "classification_status": "category",
+    "race_finished": "int8"
 }
 
 # ------------------------- Feature Builder -------------------------
@@ -93,6 +97,23 @@ def build_lap_by_lap_features(session, laps_df: pd.DataFrame, weather_df: pd.Dat
         
         driver_num_mapping = session.results.set_index("Abbreviation")["DriverNumber"].to_dict()
         df["driver_number"] = df["driver"].map(driver_num_mapping)
+        
+        # Add DNF information from results
+        status_mapping = session.results.set_index("Abbreviation")["Status"].to_dict()
+        
+        # Map each driver's final race status to all their laps
+        df["classification_status"] = df["driver"].map(status_mapping)
+        df["dnf_reason"] = df["driver"].map(status_mapping)
+        
+        # Create binary DNF flag (1 if Retired, 0 if Finished or Lapped)
+        df["is_dnf"] = (df["classification_status"] == "Retired").astype("int8")
+        df["race_finished"] = df["classification_status"].isin(["Finished", "Lapped"]).astype("int8")
+    else:
+        # Initialize DNF columns with default values if no results available
+        df["is_dnf"] = 0
+        df["dnf_reason"] = "Unknown"
+        df["classification_status"] = "Unknown"
+        df["race_finished"] = 1  # Assume finished if no status available
     
     # Add weather data (match by time)
     if weather_df is not None and not weather_df.empty:
@@ -124,7 +145,8 @@ def build_lap_by_lap_features(session, laps_df: pd.DataFrame, weather_df: pd.Dat
     df = df[cols]
     
     # Clean data types
-    for c in ["driver", "team", "circuit", "race_id", "compound"]:
+    df = df.copy()  # Prevent SettingWithCopyWarning
+    for c in ["driver", "team", "circuit", "race_id", "compound", "dnf_reason", "classification_status"]:
         if c in df.columns:
             df[c] = df[c].astype("category")
     
