@@ -139,3 +139,9 @@ dtypes = {
 * Seeds fixieren, Versionen pinnen, Artefakte loggen (Modelle, Metriken, Konfiguration).
 * Einheitliche I/O-Schemata und Validierungschecks (Dtypes, Nullraten, Bereichsprüfungen).
 
+
+
+
+# zum training des models ( predict DNFs)
+0. welche daten sind vor dem start bekannt ? ewe
+
