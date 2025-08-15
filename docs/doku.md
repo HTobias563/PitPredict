@@ -145,3 +145,104 @@ dtypes = {
 # zum training des models ( predict DNFs)
 0. welche daten sind vor dem start bekannt ? ewe
 
+# Data Dictionary – F1 (Pre-race Fokus)
+
+| Spaltenname             | Bedeutung                                                                 | Einheit/Format               | Zeitpunkt der Verfügbarkeit           |
+|-------------------------|---------------------------------------------------------------------------|------------------------------|---------------------------------------|
+| season                  | Saisonjahr                                                                | Integer                      | pre-race                              |
+| round                   | Laufnummer innerhalb der Saison                                           | Integer                      | pre-race                              |
+| race_id                 | Eindeutige ID des Rennens                                                 | String/Integer               | pre-race                              |
+| circuit                 | Streckenname/Kurzname                                                     | String                       | pre-race                              |
+| total_laps              | Geplante Rundenzahl                                                        | Integer                      | pre-race *(kann selten abweichen)*    |
+| driver                  | Fahrerkürzel/Name                                                         | String                       | pre-race                              |
+| team                    | Teamname                                                                   | String                       | pre-race                              |
+| driver_number           | Startnummer                                                                | Integer/String               | pre-race                              |
+| lap_number              | Rundenindex (1…N)                                                          | Integer                      | in-race                               |
+| lap_time_s              | Rundenzeit                                                                 | Sekunden (float)             | in-race                               |
+| sector1_time_s          | Sektor 1 Zeit                                                              | Sekunden (float)             | in-race                               |
+| sector2_time_s          | Sektor 2 Zeit                                                              | Sekunden (float)             | in-race                               |
+| sector3_time_s          | Sektor 3 Zeit                                                              | Sekunden (float)             | in-race                               |
+| position                | Position am Ende der Runde                                                 | Integer                      | in-race                               |
+| compound                | Reifenmischung der Runde (z. B. S/M/H/INT/WET)                            | Kategorie/String             | in-race *(Start-Compound teils pre)*  |
+| tyre_life               | Reifendistanz seit Montage                                                 | Runden (Integer)             | in-race                               |
+| is_pit_out_lap          | Flag: Runde direkt nach Boxenstopp                                         | Bool (0/1)                   | in-race                               |
+| is_pit_in_lap           | Flag: Runde mit Boxenstopp (Einfahrt)                                      | Bool (0/1)                   | in-race                               |
+| fresh_tyre              | Flag: frischer Reifensatz in dieser Runde                                  | Bool (0/1)                   | in-race                               |
+| track_status            | Streckenstatus (grün/SC/VSC/gelb … je Code)                                | Kategorie/String             | in-race                               |
+| air_temp                | Lufttemperatur                                                             | °C (float)                   | in-race *(pre-race Prognose möglich)* |
+| track_temp              | Streckentemperatur                                                         | °C (float)                   | in-race *(pre-race Prognose möglich)* |
+| wind_speed              | Windgeschwindigkeit                                                        | m/s oder km/h (float)        | in-race *(pre-race Prognose möglich)* |
+| humidity                | Luftfeuchtigkeit                                                           | Prozent % (float)            | in-race *(pre-race Prognose möglich)* |
+| is_dnf                  | Flag: Did Not Finish                                                       | Bool (0/1)                   | post-race                             |
+| dnf_reason              | Grund für DNF (Unfall, Technik, …)                                         | Kategorie/String             | post-race                             |
+| classification_status   | Offizieller Klassifizierungsstatus (Finished, +1 Lap, DNF, DSQ …)          | Kategorie/String             | post-race                             |
+| race_finished           | Flag: Fahrer im Ziel klassifiziert (true/false)                            | Bool (0/1)                   | post-race                             |
+
+erste frage 
+wie hoch ist die DNF warscheinlichkeit vor dem rennen ? 
+
+new data weil man nur die vor dem rennen nehmen darf und die bisherigen daten sind runden zeiten 
+# Pre-Race DNF – Datenliste (für ein gutes Modell)
+
+> Nur **pre-race** verfügbare Infos verwenden; Rolling-Features immer **bis zum VORHERIGEN Rennen** berechnen (kein Leakage).
+
+## 1) Schlüssel & Meta (Pflicht)
+- `season`
+- `round`
+- `race_id`
+- `circuit`
+- `total_laps`
+- `driver_id` / `driver`
+- `driver_number`
+- `team`
+
+## 2) Startaufstellung & Streckenkontext (Pflicht)
+- `grid_position`  *(offizielle Startposition inkl. Strafen)*
+- `pit_loss_s_est`  *(Proxy: Boxenzeitverlust dieser Strecke)*
+- `degradation_class` *(niedrig/mittel/hoch; Reifenverschleiß-Kategorie)*
+- `street_circuit` *(0/1)*
+- `overtake_difficulty` *(ordinaler Proxy oder Kategorie)*
+
+## 3) Rolling-Features aus vergangenen Rennen (stark, pre-race)
+**Qualifying-Form**
+- `q_pos_mean_last5`  *(Ø Quali-Position)*
+- `q3_rate_last5`  *(Anteil Q3-Teilnahmen)*
+- `q_best_gap_to_pole_ms_last5`  *(Bestzeit-Gap zur Pole, ms)*
+- `q_teammate_delta_ms_last5`  *(Ø Quali-Delta zum Teamkollegen, ms)*
+- `q_stdev_last5`  *(Streuungsmaß der Quali-Position)*
+
+**Reliability (DNF-Risiko)**
+- `driver_dnf_rate_last5`
+- `team_dnf_rate_last5`
+- `track_dnf_rate_hist`  *(historische DNF-Quote auf diesem Kurs, mehrere Jahre)*
+
+**Form/Pace-Proxies**
+- `points_last5`  *(Summe Punkte)*
+- `avg_finish_delta_vs_grid_last5`  *(Ø (Finish − Grid); negativ = Plätze gewonnen)*
+- `team_quali_rank_last5`  *(Team-Pace-Proxy aus Quali)*
+
+## 4) Optionale Pre-Race-Signale (nur wenn vorab bekannt)
+- `forecast_air_temp`, `forecast_wind_speed`, `forecast_humidity`  *(Vorhersagewerte, nicht In-Race-Messungen)*
+- `penalties_on_grid`  *(Anzahl/Schwere, die die Startaufstellung betreffen)*
+- `start_tyre_compound`  *(falls zuverlässig vor dem Start bekannt)*
+
+## 5) Target (für Training, nicht als Feature)
+- `is_dnf` ∈ {0,1}
+- *(optional für Analyse)* `dnf_reason`  *(Mechanik/Unfall etc.)*
+
+---
+
+## Minimal-MVP (wenn du schnell starten willst)
+- **Meta/Keys:** `season, round, race_id, circuit, total_laps, driver, driver_number, team`
+- **Start:** `grid_position`
+- **Rolling Reliability:** `driver_dnf_rate_last5, team_dnf_rate_last5, track_dnf_rate_hist`
+- **Rolling Quali:** `q_pos_mean_last5, q3_rate_last5`
+- **Target:** `is_dnf`
+
+---
+
+## Ausschluss (nicht verwenden für Pre-Race)
+- Runden-/Sektorzeiten, `lap_number`, `position` (in-race)
+- `compound` je Runde, `tyre_life`, `is_pit_in_lap`, `is_pit_out_lap`
+- `track_status` (SC/VSC/gelb)
+- gemessene `air_temp`, `track_temp`, `wind_speed`, `humidity` aus dem Rennen
