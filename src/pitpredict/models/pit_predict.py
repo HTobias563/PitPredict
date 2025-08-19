@@ -291,7 +291,7 @@ class PitStopPredictor:
             ]), num_features),
             ('cat', Pipeline([
                 ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-                ('ohe', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+                ('ohe', OneHotEncoder(handle_unknown='ignore', sparse=False))
             ]), cat_features)
         ])
         
