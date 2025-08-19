@@ -48,9 +48,48 @@ python -m src.pitpredict.models.pit_predict --train
 ```
 
 ### Race Predictions
+
+#### 🏆 2024 Rennen (Vergangenheitsdaten)
 ```bash
-# Vorhersage für Las Vegas GP 2024
-python -m src.pitpredict.models.final_position_predict --predict --race_id 2024_21
+# Einzelnes Rennen vorhersagen
+python predict_example.py --race_id 2024_21
+
+# Alle Rennen
+python predict_example.py
+```
+
+#### 🔮 Future Races (2025+)
+```bash
+# Einfache Vorhersagen
+python predict_2025.py
+
+# Erweiterte CLI mit benutzerdefinierten Grid-Positionen
+python predict_future_race.py \
+  --race_name "Monaco GP 2025" \
+  --track_type monaco \
+  --season 2025 \
+  --grid_positions "VER:1,NOR:2,LEC:3,RUS:4,HAM:5"
+```
+
+#### 📊 Python API
+```python
+from src.pitpredict.models.final_position_predict import FinalPositionPredictor
+from src.pitpredict.models.future_position_predict import FutureRacePredictor
+
+# 2024 Rennen
+predictor = FinalPositionPredictor()
+predictor.load_model('artifacts/models/final_position_predictor.pkl')
+results = predictor.predict_race('2024_21')
+
+# Future Races
+future_predictor = FutureRacePredictor()
+grid_positions = ['VER:1', 'NOR:2', 'LEC:3', 'RUS:4', 'HAM:5']
+results = future_predictor.predict_future_race(
+    "Netherlands GP 2025", 
+    grid_positions, 
+    "netherlands", 
+    2025
+)
 ```
 
 ## 📊 Model Performance
