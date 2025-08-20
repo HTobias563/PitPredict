@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pitpredict"
+version = "0.1.0"
+description = "F1 Race Outcome Prediction Suite with DNF, Pit Stop, and Final Position Models"
+authors = [
+    {name = "PitPredict Team", email = "team@pitpredict.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "numpy>=1.21.6",
+    "pandas>=1.5.3",
+    "scikit-learn>=1.1.3",
+    "scipy>=1.9.3",
+    "pyarrow>=10.0.1",
+    "joblib>=1.2.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.2.0",
+    "jupyter>=1.0.0",
+    "matplotlib>=3.6.2",
+    "seaborn>=0.12.1",
+]
+fastf1 = [
+    "fastf1>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/username/pitpredict"
+Repository = "https://github.com/username/pitpredict.git"
+Documentation = "https://pitpredict.readthedocs.io"
+
+[project.scripts]
+pitpredict-train = "pitpredict.cli:train_models"
+pitpredict-predict = "pitpredict.cli:predict_race"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''

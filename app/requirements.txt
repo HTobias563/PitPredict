@@ -1,0 +1,13 @@
+# Streamlit Web App Dependencies
+streamlit>=1.28.0
+plotly>=5.15.0
+plotly-express>=0.4.1
+
+# Core dependencies (already in main requirements.txt)
+pandas>=1.5.3
+numpy>=1.21.6
+scikit-learn>=1.1.3
+scipy>=1.9.3
+pyarrow>=10.0.1
+joblib>=1.2.0
+pyyaml>=6.0
