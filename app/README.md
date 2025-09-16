@@ -4,11 +4,11 @@ A modern web application for F1 race predictions using the PitPredict ML models.
 
 ## Features
 
-- 🎯 **2024 Race Predictions**: Real race predictions with actual grid positions
-- 🚀 **Future Predictions (2025)**: Hypothetical scenarios with custom grids
-- 📊 **Model Performance**: Detailed metrics and analysis
-- 📈 **Interactive Visualizations**: Plotly charts and graphs
-- 💾 **Export Functionality**: CSV downloads
+-  **2024 Race Predictions**: Real race predictions with actual grid positions
+-  **Future Predictions (2025)**: Hypothetical scenarios with custom grids
+-  **Model Performance**: Detailed metrics and analysis
+-  **Interactive Visualizations**: Plotly charts and graphs
+-  **Export Functionality**: CSV downloads
 
 ## Quick Start
 

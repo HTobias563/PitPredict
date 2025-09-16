@@ -44,10 +44,10 @@ predict-future:
 
 # Web Application
 install-app:
-	pip install -r app/requirements.txt
+	conda run -n pitpredict_env pip install -r app/requirements.txt
 
 run-app:
-	streamlit run app/pitpredict_app.py
+	conda run -n pitpredict_env streamlit run app/pitpredict_app.py
 
 run-app-dev:
 	streamlit run app/pitpredict_app.py --server.runOnSave true
