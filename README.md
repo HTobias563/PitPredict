@@ -177,11 +177,11 @@ python -m src.pitpredict.models.final_position_predict --test
 python -m tests.test_final_position_model
 
 # Test-Coverage:
-# ✅ Model Training & Cross-Validation
-# ✅ Model Loading & Persistence  
-# ✅ Holdout Testing
-# ✅ Race Predictions
-# ✅ Performance Analysis
+#  Model Training & Cross-Validation
+#  Model Loading & Persistence  
+#  Holdout Testing
+#  Race Predictions
+#  Performance Analysis
 ```
 
 ##  Dokumentation
