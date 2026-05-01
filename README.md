@@ -1,69 +1,103 @@
-# PitPredict - F1 Race Outcome Prediction Suite
+# PitPredict
 
-Ein umfassendes Machine Learning-System zur Vorhersage von Formel-1-Rennergebnissen, bestehend aus drei integrierten Modellen für DNF-Vorhersage, Pit Stop-Strategien und finale Positionen.
+PitPredict ist ein modulares Machine-Learning-System zur Vorhersage von Formel‑1‑Rennergebnissen. Der Fokus liegt auf reproduzierbaren Trainingspipelines, klarer Modell-Integration und nachvollziehbaren Metriken.
 
-## Modell-Übersicht
+## Inhalt
 
-### 1. **Final Position Prediction Model** 
-**Hauptmodell** für die Vorhersage der Endplatzierung vor dem Rennen
-- **Performance**: MAE 2.12 Positionen, 96.7% Podium-Accuracy
-- **Features**: 42 engineerte Features aus Grid-Position, Qualifying, historischer Performance
-- **Integration**: Nutzt DNF- und Pit Stop-Modelle als Features
+- Überblick
+- Features
+- Projektstruktur
+- Installation
+- Nutzung
+- Konfiguration
+- Datenquellen
+- Qualität & Tests
+- Dokumentation
+- Roadmap
+- Beitragen
+- Lizenz
 
-### 2. **DNF Prediction Model** 
-Vorhersage der Ausfallwahrscheinlichkeit (Did Not Finish)
-- **Performance**: Hochwertige DNF-Risiko-Einschätzung
-- **Features**: Fahrer/Team-Zuverlässigkeit, Track-spezifische Risiken
+## Überblick
 
-### 3. **Pit Stop Strategy Model**  
-Vorhersage optimaler Pit Stop-Strategien (derzeit in Reparatur)
-- **Features**: Reifenverschleiß, Streckencharakteristika, Strategische Faktoren
+PitPredict besteht aus drei Modulen:
 
-##  Quick Start
+1) Final Position Model: Vorhersage der Endplatzierung vor dem Rennen
+2) DNF Model: Ausfallwahrscheinlichkeit (Did Not Finish)
+3) Pit Stop Model: Strategievorhersage (derzeit in Überarbeitung)
 
-### Installation
-```bash
-# Repository klonen
-git clone <repository-url>
-cd PitPredict
+## Features
 
-# Conda Environment erstellen
-conda create -n pitpredict_env python=3.10
-conda activate pitpredict_env
+- Integrierte Modellkette (DNF + Pit Stop als Features für Final Position)
+- Reproduzierbare Trainingsergebnisse via Konfiguration
+- Ergebnisartefakte inklusive Metrik-Reports
+- Tests für Training, Persistenz und Vorhersagen
 
-# Abhängigkeiten installieren
-pip install numpy==1.21.6 pandas==1.5.3 scikit-learn==1.1.3 joblib pyyaml scipy pyarrow
+## Projektstruktur
+
+```
+PitPredict/
+├── src/pitpredict/                # Python-Paket (Modelle, Pipeline)
+├── data/                          # Trainings- und Feature-Daten
+├── artifacts/                     # Modelle, Metriken, Vorhersagen
+├── docs/                          # Technische Dokumentation
+├── tests/                         # Test-Suite
+└── app/                           # App-Prototypen
 ```
 
-### Training der Modelle
-```bash
-# Final Position Model (Hauptmodell)
+## Installation
+
+### Voraussetzungen
+
+- Python 3.10
+- macOS/Linux/Windows
+
+### Lokales Setup
+
+1. Repository klonen
+2. Virtuelles Environment erstellen und aktivieren
+3. Abhängigkeiten installieren
+
+Beispiel (venv):
+
+```
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Nutzung
+
+### Training
+
+Final Position Model (Hauptmodell):
+
+```
 python -m src.pitpredict.models.final_position_predict --train
+```
 
-# DNF Model
+DNF Model:
+
+```
 python -m src.pitpredict.models.train_dnf
+```
 
-# Pit Stop Model (nach Reparatur)
+Pit Stop Model (nach Reparatur):
+
+```
 python -m src.pitpredict.models.pit_predict --train
 ```
 
-### Race Predictions
+### Vorhersagen
 
-####  2024 Rennen (Vergangenheitsdaten)
-```bash
-# Einzelnes Rennen vorhersagen
+Vergangenheitsdaten (2024):
+
+```
 python predict_example.py --race_id 2024_21
-
-# Alle Rennen
-python predict_example.py
 ```
 
-####  Future Races (2025+)
-```bash
-# Einfache Vorhersagen
-python predict_2025.py
+Future Races (2025+):
 
-# Erweiterte CLI mit benutzerdefinierten Grid-Positionen
+```
 python predict_future_race.py \
   --race_name "Monaco GP 2025" \
   --track_type monaco \
@@ -71,206 +105,70 @@ python predict_future_race.py \
   --grid_positions "VER:1,NOR:2,LEC:3,RUS:4,HAM:5"
 ```
 
-####  Python API
-```python
+### Python API
+
+```
 from src.pitpredict.models.final_position_predict import FinalPositionPredictor
 from src.pitpredict.models.future_position_predict import FutureRacePredictor
 
-# 2024 Rennen
 predictor = FinalPositionPredictor()
 predictor.load_model('artifacts/models/final_position_predictor.pkl')
 results = predictor.predict_race('2024_21')
 
-# Future Races
 future_predictor = FutureRacePredictor()
 grid_positions = ['VER:1', 'NOR:2', 'LEC:3', 'RUS:4', 'HAM:5']
 results = future_predictor.predict_future_race(
-    "Netherlands GP 2025", 
-    grid_positions, 
-    "netherlands", 
-    2025
+  "Netherlands GP 2025",
+  grid_positions,
+  "netherlands",
+  2025
 )
 ```
 
-##  Model Performance
+## Konfiguration
 
-| Modell | MAE | R² | Spezialmetrik |
-|--------|-----|----|--------------| 
-| Final Position | 2.12 | 0.829 | 96.7% Podium Accuracy |
-| DNF Prediction | - | - | 76.2% DNF Detection |
-| Pit Stop Strategy | - | - | In Reparatur |
-
-##  Architektur
+Zentrale Einstellungen liegen in [config.yaml](config.yaml):
 
 ```
-PitPredict/
-├── src/pitpredict/models/
-│   ├── final_position_predict.py    # Hauptmodell
-│   ├── train_dnf.py                 # DNF-Modell  
-│   └── pit_predict.py               # Pit Stop-Modell
-├── data/season=2024/                # Training-Daten
-├── artifacts/
-│   ├── models/                      # Trainierte Modelle
-│   └── metrics/                     # Performance-Metriken
-├── docs/                           # Dokumentation
-└── tests/                          # Test-Suite
-```
-
-##  Wichtigste Features
-
-### Final Position Model Features (Top 10)
-1. **start_performance_index** (24.1%) - Kombinierter Performance-Indikator
-2. **finish_delta_vs_grid** (21.5%) - Historische Position-Verbesserung
-3. **q_gap_to_pole_s** (17.2%) - Qualifying-Gap zur Pole-Position  
-4. **reliability_adjusted_performance** (8.5%) - Zuverlässigkeits-adjustierte Performance
-5. **q_gap_to_pole_ms** (6.6%) - Qualifying-Gap (Millisekunden)
-
-### Integration
-- **DNF-Risiko** wird als Feature in Final Position-Vorhersage integriert
-- **Historical Performance** über 5-Rennen-Fenster
-- **Track-spezifische Faktoren** (Overtaking, Pit Loss, Street Circuit)
-
-##  Use Cases
-
-### 1. Pre-Race Analysis
-```python
-from src.pitpredict.models.final_position_predict import FinalPositionPredictor
-
-predictor = FinalPositionPredictor()
-predictor.load_model('artifacts/models/final_position_predictor.pkl')
-
-# Predictions für nächstes Rennen
-results = predictor.predict_final_positions(race_data)
-print("Podium Prediction:", results.head(3)['driver'].tolist())
-```
-
-### 2. Strategy Planning
-```python
-# DNF-Risiko für Fahrer-Bewertung
-high_risk_drivers = results[results['dnf_risk'] > 0.3]
-print("High DNF Risk:", high_risk_drivers[['driver', 'dnf_risk']])
-
-# Grid Position vs Prediction Analysis
-overtaking_potential = results[results['predicted_final_position'] < results['grid_position']]
-```
-
-### 3. Performance Analysis
-```python
-# Holdout-Test für Model-Validierung
-python -m src.pitpredict.models.final_position_predict --test
-
-# Ergebnisse:
-# MAE: 2.95, R²: 0.691, Podium Acc: 91.3%
-```
-
-##  Datenquellen
-
-- **driver_race_table.parquet**: Haupt-Dataset mit Race-Ergebnissen
-- **Lap Data**: Detaillierte Lap-by-Lap-Daten für Pit Stop-Modell  
-- **FastF1 Cache**: Cached Race-Daten für schnelleren Zugriff
-- **Config.yaml**: Zentrale Konfiguration für Pfade und Parameter
-
-##  Testing
-
-```bash
-# Vollständiger Test des Final Position Models
-python -m tests.test_final_position_model
-
-# Test-Coverage:
-#  Model Training & Cross-Validation
-#  Model Loading & Persistence  
-#  Holdout Testing
-#  Race Predictions
-#  Performance Analysis
-```
-
-##  Dokumentation
-
-- **[Final Position Model Übersicht](docs/FINAL_POSITION_MODEL.md)** - Detaillierte Modell-Dokumentation
-- **[API Documentation](docs/FINAL_POSITION_API.md)** - Technische API-Referenz
-- **[DNF Features](docs/DNF_FEATURES.md)** - DNF-Modell Details
-- **[Pit Stop Model](docs/PITSTOP_MODEL_SUMMARY.md)** - Pit Stop-Modell (Legacy)
-
-## 🔧 Konfiguration
-
-### config.yaml
-```yaml
 season: 2024
-processed_table: 'data/season=2024/driver_race_table.parquet'
-models_dir: 'artifacts/models'
-metrics_dir: 'artifacts/metrics'
-holdout_rounds: [21, 22, 23, 24]  # Abu Dhabi, Las Vegas, Qatar, Finale
+processed_table: data/season=2024/driver_race_table.parquet
+models_dir: artifacts/models
+metrics_dir: artifacts/metrics
+holdout_rounds: [21, 22, 23, 24]
 ```
 
-### Python Environment
-- **Python**: 3.10 (Kompatibilität mit Legacy-Paketen)
-- **NumPy**: <1.22 (scikit-learn Kompatibilität)
-- **Pandas**: <2.0 (Backward Compatibility)
-- **Scikit-learn**: <1.2 (OneHotEncoder sparse_output)
+## Datenquellen
 
-##  Aktuelle Entwicklung
+- driver_race_table.parquet: Haupt-Dataset mit Race-Ergebnissen
+- Lap Data: Lap-by-Lap-Daten für Pit-Stop-Modelle
+- FastF1 Cache: lokaler Cache für schnellere Runs
 
-###  Fertiggestellt
-- Final Position Prediction Model (Produktionsbereit)
-- DNF Model Integration
-- Comprehensive Test Suite
-- Performance Monitoring
-- Dokumentation
+## Qualität & Tests
 
-###  In Arbeit
-- Pit Stop Model Reparatur (OneHotEncoder Kompatibilität)
-- Real-time Race Updates
-- Wetter-Integration
-- Erweiterte Feature Engineering
-
-###  Geplant
-- Ensemble Methods (Multiple Algorithm Fusion)
-- Safety Car Probability Modeling
-- Tire Strategy Optimization
-- Live Dashboard für Race Day
-
-##  Model Insights
-
-### Was funktioniert sehr gut:
-- **Podium-Vorhersagen**: >90% Accuracy auf allen Streckentypen
-- **Qualifying-basierte Predictions**: Grid Position + Gap = starker Prädiktor
-- **Historical Performance Integration**: 5-Rennen-Fenster optimal
-- **DNF-Risiko-Einschätzung**: 76% Detection Rate
-
-### Herausforderungen:
-- **Street Circuits**: Höhere Variabilität (MAE ~4.0 vs ~2.5)
-- **Extreme Comebacks**: VER P17→P1 schwer vorhersagbar
-- **Strategy Surprises**: Unerwartete Pit Stop-Entscheidungen
-- **Weather Impact**: Noch nicht vollständig modelliert
-
-##  Erfolge
-
-- **96.7% Podium Accuracy** - Weltklasse-Performance
-- **2.12 MAE** - Durchschnittlich nur 2 Positionen Fehler
-- **82.9% Varianz erklärt** - Sehr starke Predictive Power
-- **Robuste Cross-Validation** - Konsistent über alle Folds
-
-##  Beitragen
-
-Das Projekt ist modular aufgebaut und erweiterbar. Neue Features können in der Feature-Engineering-Pipeline hinzugefügt werden.
-
-### Development Setup
-```bash
-# Testing Environment
-conda activate pitpredict_env
+```
 python -m pytest tests/ -v
-
-# Code Quality
-flake8 src/
-mypy src/
 ```
 
+## Dokumentation
 
+- [Final Position Model](docs/FINAL_POSITION_MODEL.md)
+- [API Referenz](docs/FINAL_POSITION_API.md)
+- [DNF Features](docs/DNF_FEATURES.md)
+- [Pit Stop Model](docs/PITSTOP_MODEL_SUMMARY.md)
 
----
+## Roadmap
 
-**Status**:  Produktionsbereit für Final Position Predictions  
-**Letzte Aktualisierung**: August 2025  
-**Maintainer**: [Entwickler-Info]
+- Pit Stop Model Fixes (OneHotEncoder-Kompatibilität)
+- Wetter-Features
+- Live Race Updates
+- Ensemble-Ansätze
 
+## Beitragen
 
+Siehe [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Lizenz
+
+Siehe [LICENSE](LICENSE).
+
+```

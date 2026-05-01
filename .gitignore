@@ -11,3 +11,4 @@ __pycache__/
 **/.ipynb_checkpoints
 !data/.gitkeep
 !artifacts/.gitkeep
+.DS_Store
