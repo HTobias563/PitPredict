@@ -508,26 +508,29 @@ class FinalPositionPredictor:
     
     def save_model(self, filepath: str, metadata: Dict[str, Any] = None):
         """Speichere das trainierte Modell"""
+        # Store config as plain dict so the pkl has no __main__ class references
         model_data = {
             'model': self.model,
             'feature_names': self.feature_names,
-            'config': self.config,
-            'feature_engineer': self.feature_engineer,
+            'config_dict': vars(self.config),
             'metadata': metadata or {}
         }
-        
         joblib.dump(model_data, filepath)
         print(f"[INFO] Modell gespeichert: {filepath}")
-    
+
     def load_model(self, filepath: str):
         """Lade ein gespeichertes Modell"""
         model_data = joblib.load(filepath)
         self.model = model_data['model']
         self.feature_names = model_data['feature_names']
-        self.config = model_data.get('config', FinalPositionPredictionConfig())
-        self.feature_engineer = model_data.get('feature_engineer', 
-                                              FinalPositionFeatureEngineer(self.config))
-        
+        # Reconstruct config – works with both new (dict) and old (instance) format
+        raw = model_data.get('config_dict') or model_data.get('config')
+        if isinstance(raw, dict):
+            self.config = FinalPositionPredictionConfig(**raw)
+        else:
+            self.config = raw if raw is not None else FinalPositionPredictionConfig()
+        # feature_engineer has no fitted state – always recreate from config
+        self.feature_engineer = FinalPositionFeatureEngineer(self.config)
         print(f"[INFO] Modell geladen: {filepath}")
         return model_data.get('metadata', {})
 

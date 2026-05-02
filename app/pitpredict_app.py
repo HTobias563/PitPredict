@@ -18,20 +18,6 @@ app_root = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(app_root)
 sys.path.append(project_root)
 
-# joblib unpickles classes by looking in __main__; inject them so deserialization works
-try:
-    from src.pitpredict.models.final_position_predict import (
-        FinalPositionPredictionConfig,
-        FinalPositionPredictor,
-        FinalPositionFeatureEngineer,
-    )
-    _main = sys.modules["__main__"]
-    _main.FinalPositionPredictionConfig = FinalPositionPredictionConfig
-    _main.FinalPositionPredictor = FinalPositionPredictor
-    _main.FinalPositionFeatureEngineer = FinalPositionFeatureEngineer
-except Exception:
-    pass
-
 st.set_page_config(
     page_title="PitPredict",
     page_icon="🏎",
