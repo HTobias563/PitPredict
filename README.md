@@ -170,5 +170,3 @@ Siehe [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Lizenz
 
 Siehe [LICENSE](LICENSE).
-
-```
