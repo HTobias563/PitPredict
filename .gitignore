@@ -1,15 +1,22 @@
-/cache
-/fastf1_cache
-/__pycache__
-/data
-
-data/*
-artifacts/*
-fastf1_cache/
+# Python
 __pycache__/
 *.pyc
 **/.ipynb_checkpoints
-!data/.gitkeep
-!artifacts/.gitkeep
+
+# FastF1 cache (groß, nicht nötig für die App)
+fastf1_cache/
+/cache
+
+# Lap-by-Lap Parquets & CSVs (groß, nicht für App nötig)
+data/season=*/round=*_laps.parquet
+data/season=*/round_*_laps.csv
+
+# Predictions-CSVs & numpy dumps (generierte Outputs)
+artifacts/metrics/*.csv
+artifacts/metrics/*.npy
+
+# macOS
 .DS_Store
+
+# Claude memory
 .claude/

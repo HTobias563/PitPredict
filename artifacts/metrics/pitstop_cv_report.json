@@ -1,0 +1,73 @@
+{
+  "fold_scores": [
+    {
+      "fold": 1,
+      "pr_auc": 0.40045424069788144,
+      "roc_auc": 0.822981989424005,
+      "brier": 0.07018236840292508,
+      "n_val": 4094
+    },
+    {
+      "fold": 2,
+      "pr_auc": 0.33556806441991743,
+      "roc_auc": 0.8281126531770556,
+      "brier": 0.11110487355142079,
+      "n_val": 4112
+    },
+    {
+      "fold": 3,
+      "pr_auc": 0.3535525944084535,
+      "roc_auc": 0.8231705231075448,
+      "brier": 0.07241912709728716,
+      "n_val": 4073
+    },
+    {
+      "fold": 4,
+      "pr_auc": 0.33670468854221164,
+      "roc_auc": 0.8573598393041406,
+      "brier": 0.08486206318037577,
+      "n_val": 4091
+    },
+    {
+      "fold": 5,
+      "pr_auc": 0.10944299208265974,
+      "roc_auc": 0.6930803186907839,
+      "brier": 0.15875150805251576,
+      "n_val": 4110
+    }
+  ],
+  "overall_pr_auc": 0.2419930757294681,
+  "overall_roc_auc": 0.8047668658301049,
+  "overall_brier": 0.0995504081796399,
+  "n_samples": 20480,
+  "n_positive": 1775,
+  "positive_rate": 0.086669921875,
+  "feature_names": [
+    "position",
+    "tyre_life",
+    "fresh_tyre",
+    "track_status",
+    "air_temp",
+    "track_temp",
+    "wind_speed",
+    "humidity",
+    "is_dnf",
+    "laps_since_pit",
+    "stint_number",
+    "compound_age",
+    "is_hard_compound",
+    "is_medium_compound",
+    "is_soft_compound",
+    "position_delta",
+    "avg_laptime_stint",
+    "laptime_degradation",
+    "race_progress",
+    "pit_window_optimal",
+    "pit_window_critical",
+    "late_race",
+    "temp_change",
+    "high_temp",
+    "dnf_risk",
+    "compound"
+  ]
+}
