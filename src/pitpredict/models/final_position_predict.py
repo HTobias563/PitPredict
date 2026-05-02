@@ -295,7 +295,7 @@ class FinalPositionPredictor:
             ]), num_features),
             ('cat', Pipeline([
                 ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-                ('ohe', OneHotEncoder(handle_unknown='ignore', sparse=False))
+                ('ohe', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
             ]), cat_features)
         ])
         
