@@ -21,6 +21,8 @@ PitPredict ist ein modulares Machine-Learning-System zur Vorhersage von Formel�
 
 PitPredict besteht aus drei Modulen:
 
+Live‑App: https://pitpredict.streamlit.app
+
 1) Final Position Model: Vorhersage der Endplatzierung vor dem Rennen
 2) DNF Model: Ausfallwahrscheinlichkeit (Did Not Finish)
 3) Pit Stop Model: Strategievorhersage (derzeit in Überarbeitung)
