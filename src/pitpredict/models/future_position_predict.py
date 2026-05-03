@@ -31,6 +31,11 @@ CONFIG_PATH = os.path.join(ROOT, 'config.yaml')
 with open(CONFIG_PATH, 'r') as f:
     CFG = yaml.safe_load(f)
 
+def _abs_path(path: str) -> str:
+    if os.path.isabs(path):
+        return path
+    return os.path.join(ROOT, path)
+
 class FutureRacePredictionConfig(FinalPositionPredictionConfig):
     """Erweiterte Konfiguration für Future Race Predictions"""
     
@@ -120,7 +125,7 @@ class FutureRacePredictor(FinalPositionPredictor):
         print(f"📊 Lade Baseline-Daten für Saison {season}...")
         
         # Verwende die bestehende Konfiguration
-        data_path = CFG['processed_table'].replace('2024', str(season))
+        data_path = _abs_path(CFG['processed_table']).replace('2024', str(season))
         
         if not os.path.exists(data_path):
             raise FileNotFoundError(f"Baseline-Daten nicht gefunden: {data_path}")
@@ -129,7 +134,7 @@ class FutureRacePredictor(FinalPositionPredictor):
         
         # Lade das trainierte Modell falls noch nicht geladen
         if self.model is None:
-            model_path = os.path.join(CFG['models_dir'], 'final_position_predictor.pkl')
+            model_path = os.path.join(_abs_path(CFG['models_dir']), 'final_position_predictor.pkl')
             if os.path.exists(model_path):
                 self.load_model(model_path)
                 print(f"✅ Modell geladen: {model_path}")

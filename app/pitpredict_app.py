@@ -360,6 +360,15 @@ class PitPredictApp:
 
         df = pd.DataFrame(rows)
 
+        # Ensure numeric dtypes for Arrow compatibility
+        for col in ("Pos", "Punkte", "Siege"):
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+        df = df.fillna({"Pos": 0, "Punkte": 0, "Siege": 0})
+        df["Pos"] = df["Pos"].astype(int)
+        df["Punkte"] = df["Punkte"].astype(int)
+        df["Siege"] = df["Siege"].astype(int)
+
         # Color bars by team
         team_col = df["Team"].map(lambda t: TEAM_COLORS.get(t, "#888"))
 
@@ -384,10 +393,9 @@ class PitPredictApp:
         st.plotly_chart(fig, use_container_width=True)
 
         # Table below chart
-        st.dataframe(
-            df.style.background_gradient(subset=["Punkte"], cmap="Reds"),
-            use_container_width=True,
-            hide_index=True,
+        st.markdown(
+            df.to_html(index=False),
+            unsafe_allow_html=True,
         )
 
     def _render_constructor_standings(self, standings: List[Dict]):
@@ -403,6 +411,15 @@ class PitPredictApp:
             })
 
         df = pd.DataFrame(rows)
+
+        # Ensure numeric dtypes for Arrow compatibility
+        for col in ("Pos", "Punkte", "Siege"):
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+        df = df.fillna({"Pos": 0, "Punkte": 0, "Siege": 0})
+        df["Pos"] = df["Pos"].astype(int)
+        df["Punkte"] = df["Punkte"].astype(int)
+        df["Siege"] = df["Siege"].astype(int)
         team_col = df["Team"].map(lambda t: TEAM_COLORS.get(t, "#888"))
 
         fig = go.Figure()
@@ -425,10 +442,9 @@ class PitPredictApp:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        st.dataframe(
-            df.style.background_gradient(subset=["Punkte"], cmap="Oranges"),
-            use_container_width=True,
-            hide_index=True,
+        st.markdown(
+            df.to_html(index=False),
+            unsafe_allow_html=True,
         )
 
     # ─────────────────────────────────────────────────────────────────────────
@@ -440,14 +456,15 @@ class PitPredictApp:
         st.markdown("Wähle ein Rennen, passe die Startaufstellung an und generiere eine Vorhersage.")
 
         # Load predictor
+        use_fallback = False
         try:
             from src.pitpredict.models.future_position_predict import FutureRacePredictor
             if "future_predictor" not in st.session_state:
                 with st.spinner("Lade Modell..."):
                     st.session_state.future_predictor = FutureRacePredictor()
         except Exception as e:
-            st.error(f"Modell konnte nicht geladen werden: {e}")
-            return
+            st.warning(f"Modell konnte nicht geladen werden ({e}). Fallback‑Vorhersage aktiv.")
+            use_fallback = True
 
         # ── Race selector ─────────────────────────────────────────────────
         race_names = [f"R{r['round']:02d} · {r['name']}" for r in CALENDAR_2025]
@@ -507,12 +524,27 @@ class PitPredictApp:
         if st.button("Vorhersage generieren", type="primary", use_container_width=True):
             with st.spinner("Berechne Vorhersage..."):
                 try:
-                    predictions = st.session_state.future_predictor.predict_future_race(
-                        race_name=selected_race["name"],
-                        grid_positions=grid_positions,
-                        track_type=track_type,
-                        season=2025,
-                    )
+                    if use_fallback:
+                        predictions = self._heuristic_future_prediction(
+                            grid_positions=grid_positions,
+                            track_type=track_type,
+                        )
+                    else:
+                        try:
+                            predictions = st.session_state.future_predictor.predict_future_race(
+                                race_name=selected_race["name"],
+                                grid_positions=grid_positions,
+                                track_type=track_type,
+                                season=2025,
+                            )
+                        except Exception as model_err:
+                            st.warning(
+                                f"Modellvorhersage fehlgeschlagen ({model_err}). Fallback‑Vorhersage aktiv."
+                            )
+                            predictions = self._heuristic_future_prediction(
+                                grid_positions=grid_positions,
+                                track_type=track_type,
+                            )
                     if predictions is not None and len(predictions) > 0:
                         st.session_state.last_predictions = predictions
                         st.session_state.last_race_name = selected_race["name"]
@@ -691,6 +723,77 @@ class PitPredictApp:
             file_name=f"pitpredict_{race_name.replace(' ', '_').lower()}.csv",
             mime="text/csv",
         )
+
+    def _heuristic_future_prediction(self, grid_positions: Dict[str, int], track_type: str) -> pd.DataFrame:
+        """Fallback‑Vorhersage ohne Modell (heuristisch, deterministisch)."""
+        # Grobe Team‑Stärke (niedriger = besser)
+        team_strength = {
+            "Red Bull Racing": 1.0,
+            "McLaren": 1.5,
+            "Ferrari": 1.8,
+            "Mercedes": 2.3,
+            "Aston Martin": 3.0,
+            "Alpine": 3.6,
+            "Williams": 3.8,
+            "Racing Bulls": 4.0,
+            "Haas F1 Team": 4.5,
+            "Kick Sauber": 4.8,
+        }
+
+        # Fahrer‑Stärke (niedriger = besser)
+        driver_strength = {
+            "VER": 1.0, "NOR": 1.5, "LEC": 1.8, "PIA": 2.1,
+            "HAM": 2.2, "RUS": 2.4, "ALO": 2.8, "SAI": 3.0,
+            "STR": 3.4, "GAS": 3.6, "TSU": 3.7, "ALB": 3.8,
+            "LAW": 4.0, "HUL": 4.1, "MAG": 4.2, "BEA": 4.3,
+            "ANT": 4.4, "DOO": 4.5, "HAD": 4.6, "BOR": 4.7,
+        }
+
+        track_bias = {
+            "monaco": 0.6,
+            "netherlands": 0.4,
+            "spa": -0.3,
+            "silverstone": -0.1,
+            "default": 0.0,
+        }.get(track_type, 0.0)
+
+        rows = []
+        for code, grid_pos in grid_positions.items():
+            info = DRIVERS_2025.get(code, {})
+            team = info.get("team", "")
+            t = team_strength.get(team, 4.0)
+            d = driver_strength.get(code, 4.2)
+            # Score: kleinere Werte = besser
+            score = (grid_pos * 0.6) + (t * 2.5) + (d * 2.0) + track_bias
+            rows.append({
+                "driver": code,
+                "team": team,
+                "grid_position": grid_pos,
+                "_score": score,
+            })
+
+        df = pd.DataFrame(rows).sort_values("_score").reset_index(drop=True)
+        df["predicted_final_position"] = df.index + 1
+        df["predicted_position_rounded"] = df["predicted_final_position"].astype(int)
+
+        # Simple DNF‑Risiko und Confidence
+        df["dnf_risk"] = df["team"].map(
+            {
+                "Red Bull Racing": 0.08,
+                "McLaren": 0.09,
+                "Ferrari": 0.12,
+                "Mercedes": 0.11,
+                "Aston Martin": 0.14,
+                "Alpine": 0.16,
+                "Williams": 0.15,
+                "Racing Bulls": 0.17,
+                "Haas F1 Team": 0.19,
+                "Kick Sauber": 0.20,
+            }
+        ).fillna(0.18)
+        df["prediction_confidence"] = 0.45
+
+        return df.drop(columns=["_score"]) 
 
     # ─────────────────────────────────────────────────────────────────────────
     # PAGE 3: EVALUATION

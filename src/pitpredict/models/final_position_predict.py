@@ -27,6 +27,7 @@ import os
 import json
 import joblib
 import warnings
+import sklearn
 import argparse
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional, Tuple
@@ -54,10 +55,15 @@ CONFIG_PATH = os.path.join(ROOT, 'config.yaml')
 with open(CONFIG_PATH, 'r') as f:
     CFG = yaml.safe_load(f)
 
-# Pfade aus Config
-PROCESSED_TABLE = CFG['processed_table']
-METRICS_DIR = CFG['metrics_dir']
-MODELS_DIR = CFG['models_dir']
+# Pfade aus Config (auf absolute Pfade normalisieren)
+def _abs_path(path: str) -> str:
+    if os.path.isabs(path):
+        return path
+    return os.path.join(ROOT, path)
+
+PROCESSED_TABLE = _abs_path(CFG['processed_table'])
+METRICS_DIR = _abs_path(CFG['metrics_dir'])
+MODELS_DIR = _abs_path(CFG['models_dir'])
 HOLDOUT_ROUNDS = set(CFG.get('holdout_rounds', []))
 LAP_DATA_DIR = os.path.join(ROOT, 'data', f'season={CFG["season"]}')
 
@@ -508,12 +514,16 @@ class FinalPositionPredictor:
     
     def save_model(self, filepath: str, metadata: Dict[str, Any] = None):
         """Speichere das trainierte Modell"""
+        env_meta = {
+            "numpy_version": np.__version__,
+            "sklearn_version": sklearn.__version__,
+        }
         # Store config as plain dict so the pkl has no __main__ class references
         model_data = {
             'model': self.model,
             'feature_names': self.feature_names,
             'config_dict': vars(self.config),
-            'metadata': metadata or {}
+            'metadata': {**(metadata or {}), **env_meta}
         }
         joblib.dump(model_data, filepath)
         print(f"[INFO] Modell gespeichert: {filepath}")
@@ -531,6 +541,14 @@ class FinalPositionPredictor:
             self.config = raw if raw is not None else FinalPositionPredictionConfig()
         # feature_engineer has no fitted state – always recreate from config
         self.feature_engineer = FinalPositionFeatureEngineer(self.config)
+        meta = model_data.get('metadata', {})
+        if meta:
+            saved_np = meta.get("numpy_version")
+            saved_sk = meta.get("sklearn_version")
+            if saved_np and saved_np != np.__version__:
+                print(f"[WARNING] NumPy-Version weicht ab: gespeichert {saved_np}, aktuell {np.__version__}")
+            if saved_sk and saved_sk != sklearn.__version__:
+                print(f"[WARNING] scikit-learn-Version weicht ab: gespeichert {saved_sk}, aktuell {sklearn.__version__}")
         print(f"[INFO] Modell geladen: {filepath}")
         return model_data.get('metadata', {})
 

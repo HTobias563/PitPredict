@@ -73,6 +73,17 @@ Final Position Model (Hauptmodell):
 
 ```
 python -m src.pitpredict.models.final_position_predict --train
+
+### Modell-Kompatibilität (wichtig)
+
+Das gespeicherte Modell ist versionsgebunden (NumPy + scikit-learn). Wenn die
+Versionen abweichen, kann das Laden fehlschlagen. Deshalb:
+
+1) Nutze die gepinnten Versionen in [requirements.txt](requirements.txt)
+2) Oder trainiere das Modell nach einem Upgrade neu
+
+Beim Speichern werden die verwendeten Versionen jetzt im Modell mitgeführt und
+beim Laden geprüft.
 ```
 
 DNF Model:
