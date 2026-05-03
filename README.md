@@ -21,11 +21,13 @@ PitPredict ist ein modulares Machine-Learning-System zur Vorhersage von Formel�
 
 PitPredict besteht aus drei Modulen:
 
-Live‑App: https://pitpredict.streamlit.app
-
 1) Final Position Model: Vorhersage der Endplatzierung vor dem Rennen
 2) DNF Model: Ausfallwahrscheinlichkeit (Did Not Finish)
 3) Pit Stop Model: Strategievorhersage (derzeit in Überarbeitung)
+
+## Demo
+
+Live‑App: https://pitpredict.streamlit.app
 
 ## Features
 
@@ -69,12 +71,20 @@ pip install -r requirements.txt
 
 ## Nutzung
 
+### Quickstart (App lokal)
+
+```
+pip install -r app/requirements.txt
+streamlit run app/pitpredict_app.py
+```
+
 ### Training
 
 Final Position Model (Hauptmodell):
 
 ```
 python -m src.pitpredict.models.final_position_predict --train
+```
 
 ### Modell-Kompatibilität (wichtig)
 
@@ -86,7 +96,6 @@ Versionen abweichen, kann das Laden fehlschlagen. Deshalb:
 
 Beim Speichern werden die verwendeten Versionen jetzt im Modell mitgeführt und
 beim Laden geprüft.
-```
 
 DNF Model:
 
@@ -137,6 +146,22 @@ results = future_predictor.predict_future_race(
   2025
 )
 ```
+
+## Architektur (kurz)
+
+- ETL + Feature Engineering in src/pitpredict
+- Modelle + Evaluation in src/pitpredict/models
+- Streamlit‑UI in app/pitpredict_app.py
+
+## Grenzen & Annahmen
+
+- Modell ist versionsgebunden (NumPy + scikit‑learn)
+- 2025‑Rennen sind hypothetische Szenarien (Transfers/Track‑Profile)
+- Pit‑Stop‑Modell ist derzeit deaktiviert
+
+## Screenshots
+
+- (Platzhalter) Füge 1–2 UI‑Screenshots hinzu
 
 ## Konfiguration
 
